@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:16
+    container_name: seashell_db
+    environment:
+      POSTGRES_USER: seashell
+      POSTGRES_PASSWORD: seashell
+      POSTGRES_DB: seashell_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - seashell_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U seashell -d seashell_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  seashell_pgdata:
