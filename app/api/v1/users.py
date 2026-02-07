@@ -1,6 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Header
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 from app.db import get_db
 from app.db.models import User
@@ -37,7 +37,7 @@ def get_current_user(token: str = None, db: Session = Depends(get_db)) -> User:
 
 @router.get("/profile", response_model=UserResponse)
 def get_current_user_info(
-    authorization: str = None,
+    authorization: Optional[str] = Header(None),
     db: Session = Depends(get_db),
 ):
     """Get current logged-in user info."""
@@ -62,7 +62,7 @@ def list_users(db: Session = Depends(get_db)):
 @router.post("/create-user", response_model=UserResponse)
 def create_user(
     user_data: UserCreate,
-    authorization: str = None,
+    authorization: Optional[str] = Header(None),
     db: Session = Depends(get_db),
 ):
     """Create a new user (requires authentication)."""
