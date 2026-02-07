@@ -1,0 +1,14 @@
+Challenge: James collects seashells with his sister Anna. They have an extensive collection of seashells and have a hard time tracking the seashells. They have decided they need an app that communicates with a backend to see the whole collection of seashells. James and Anna have asked for your help to implement the backend.
+
+Requirements: Your backend should be able to complete the following tasks:
+- Add a new seashell (Name, Species, Description, etc.)
+- Remove seashells
+- Edit seashells
+- List all of the seashells
+- Persist data using a database of your choice
+- Easy to consume API documentation for the frontend developer
+
+Grading: The grading will be based on three criteria:
+- 30% - API documentation
+- 30% - Data management and store
+- 40% - Overall design and structure
