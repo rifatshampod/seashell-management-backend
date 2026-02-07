@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
     APP_NAME: str = "Seashell Backend"
     ENV: str = "dev"
+    SECRET_KEY: str = "your-secret-key-change-this-in-production"
     
     class Config:
         env_file = ".env"
