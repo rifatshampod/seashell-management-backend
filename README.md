@@ -2,6 +2,19 @@
 
 > Repository of technical assessment project for KONE summer trainee (Cloud Developer) position. Please refrain from using this for personal or professional use. This repository will be archived after the recruitment process is completed. 
 
+## Project Stucture
+```bash
+app/
+  api/            # Versioned API endpoints
+  core/           # Config, security, OpenAPI setup
+  db/             # Models, session, repositories
+  schemas/        # Request/response validation
+  services/       # Business logic
+alembic/          # Database migrations
+tests/            # Automated tests
+scripts/          # Seed/admin helper scripts
+```
+
 
 ## Table ideation:
 
