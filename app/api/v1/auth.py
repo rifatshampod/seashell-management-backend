@@ -27,27 +27,3 @@ def login(user_data: UserLogin, db: Session = Depends(get_db)):
     
     access_token = create_access_token(str(user.id))
     return {"access_token": access_token, "token_type": "bearer"}
-
-
-@router.post("/register", response_model=UserResponse)
-def register(user_data: UserCreate, db: Session = Depends(get_db)):
-    """Register a new user."""
-    existing_user = db.query(User).filter(User.email == user_data.email).first()
-    if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Email already registered",
-        )
-    
-    new_user = User(
-        email=user_data.email,
-        password_hash=hash_password(user_data.password),
-        full_name=user_data.full_name,
-        is_active=True,
-    )
-    
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    
-    return new_user
