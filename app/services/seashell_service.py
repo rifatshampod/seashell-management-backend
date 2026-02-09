@@ -11,6 +11,9 @@ from sqlalchemy import or_
 from app.db.models import Seashell
 from app.schemas.seashell import SeashellCreate, SeashellUpdate
 
+#image upload delete
+from app.core.file_upload import delete_seashell_images
+
 
 class SeashellServiceError(Exception):
     """Base exception for seashell service errors."""
@@ -220,9 +223,59 @@ class SeashellService:
         Raises:
             SeashellNotFoundError: If the seashell is not found.
         """
+        
         seashell = self.get_seashell_by_id(seashell_id)
+        
+        # Delete associated images
+        delete_seashell_images(str(seashell_id))
+        
         self.db.delete(seashell)
         self.db.commit()
+
+    def update_image_url(self, seashell_id: UUID, image_url: str) -> "Seashell":
+        """
+        Update the image URL for a seashell.
+        
+        Args:
+            seashell_id: The UUID of the seashell.
+            image_url: The new image URL.
+            
+        Returns:
+            The updated Seashell object.
+            
+        Raises:
+            SeashellNotFoundError: If the seashell is not found.
+        """
+        seashell = self.get_seashell_by_id(seashell_id)
+        seashell.image_url = image_url
+        self.db.commit()
+        self.db.refresh(seashell)
+        return seashell
+
+    def delete_image(self, seashell_id: UUID) -> "Seashell":
+        """
+        Delete the image for a seashell.
+        
+        Args:
+            seashell_id: The UUID of the seashell.
+            
+        Returns:
+            The updated Seashell object.
+            
+        Raises:
+            SeashellNotFoundError: If the seashell is not found.
+        """
+        from app.core.file_upload import delete_image_file
+        
+        seashell = self.get_seashell_by_id(seashell_id)
+        
+        if seashell.image_url:
+            delete_image_file(seashell.image_url)
+            seashell.image_url = None
+            self.db.commit()
+            self.db.refresh(seashell)
+        
+        return seashell
 
     def get_unique_species(self) -> List[str]:
         """
@@ -263,3 +316,4 @@ class SeashellService:
         """
         results = self.db.query(Seashell.condition).distinct().all()
         return [r[0] for r in results if r[0]]
+

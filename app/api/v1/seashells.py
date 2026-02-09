@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, HTTPException, status, Header, UploadFile
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from uuid import UUID
@@ -177,3 +177,66 @@ def delete_seashell(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Seashell not found",
         )
+
+
+@router.post("/{seashell_id}/upload-image", response_model=SeashellResponse)
+async def upload_image(
+    seashell_id: UUID,
+    file: UploadFile,
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db),
+):
+    """Upload an image for a seashell (requires authentication)."""
+    from app.core.file_upload import save_upload_file, InvalidFileTypeError, FileTooLargeError
+    
+    token = extract_token(authorization)
+    get_current_user(token=token, db=db)
+    
+    service = SeashellService(db)
+    
+    # Verify seashell exists
+    try:
+        service.get_seashell_by_id(seashell_id)
+    except SeashellNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Seashell not found",
+        )
+    
+    # Save the file
+    try:
+        image_url = await save_upload_file(file, str(seashell_id))
+    except InvalidFileTypeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except FileTooLargeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=str(e),
+        )
+    
+    # Update database with image URL
+    return service.update_image_url(seashell_id, image_url)
+
+
+@router.delete("/{seashell_id}/image", response_model=SeashellResponse)
+def delete_image(
+    seashell_id: UUID,
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db),
+):
+    """Delete the image for a seashell (requires authentication)."""
+    token = extract_token(authorization)
+    get_current_user(token=token, db=db)
+    
+    service = SeashellService(db)
+    try:
+        return service.delete_image(seashell_id)
+    except SeashellNotFoundError:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Seashell not found",
+        )
+

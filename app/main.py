@@ -1,4 +1,6 @@
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from pathlib import Path
 from app.core.config import get_settings
 from app.api.v1 import auth, users, seashells
 
@@ -9,6 +11,13 @@ app = FastAPI(
     version="1.0.0",
     description="Seashell Management Backend API",
 )
+
+# Create uploads directory if it doesn't exist
+uploads_dir = Path("uploads")
+uploads_dir.mkdir(exist_ok=True)
+
+# Mount static files for serving uploaded images
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # Include routers
 app.include_router(auth.router)
