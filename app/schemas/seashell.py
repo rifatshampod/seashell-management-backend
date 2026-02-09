@@ -31,6 +31,7 @@ class SeashellResponse(BaseModel):
     condition: Optional[str]
     notes: Optional[str]
     image_url: Optional[str]
+    added_by_id: Optional[UUID]
     created_at: datetime
     updated_at: datetime
 
