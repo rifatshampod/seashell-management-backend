@@ -50,3 +50,8 @@ class SeashellUpdate(BaseModel):
     condition: Optional[str] = None
     notes: Optional[str] = None
     image_url: Optional[str] = None
+
+
+class DeleteResponse(BaseModel):
+    message: str
+    id: UUID

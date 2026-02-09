@@ -4,7 +4,7 @@ from typing import Optional, List
 from uuid import UUID
 from app.db import get_db
 from app.db.models import Seashell, User
-from app.schemas.seashell import SeashellCreate, SeashellResponse, SeashellUpdate
+from app.schemas.seashell import SeashellCreate, SeashellResponse, SeashellUpdate, DeleteResponse
 from app.core.security import verify_token
 
 router = APIRouter(prefix="/api/v1/seashells", tags=["seashells"])
@@ -131,3 +131,32 @@ def update_seashell(
     db.refresh(seashell)
     
     return seashell
+
+
+@router.delete("/{seashell_id}", response_model=DeleteResponse)
+def delete_seashell(
+    seashell_id: UUID,
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db),
+):
+    """Delete a seashell (requires authentication)."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+    
+    token = authorization.replace("Bearer ", "")
+    current_user = get_current_user(token=token, db=db)
+    
+    seashell = db.query(Seashell).filter(Seashell.id == seashell_id).first()
+    if not seashell:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Seashell not found",
+        )
+    
+    db.delete(seashell)
+    db.commit()
+    
+    return {"message": "Seashell deleted successfully", "id": seashell_id}
