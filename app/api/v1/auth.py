@@ -1,9 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from app.db import get_db
-from app.db.models import User
-from app.schemas.user import UserLogin, UserCreate, UserResponse, TokenResponse
-from app.core.security import hash_password, verify_password, create_access_token
+from app.schemas.user import UserLogin, TokenResponse
+from app.services import UserService, InvalidCredentialsError
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 
@@ -11,19 +10,17 @@ router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
 @router.post("/login", response_model=TokenResponse)
 def login(user_data: UserLogin, db: Session = Depends(get_db)):
     """Login endpoint - returns JWT token."""
-    user = db.query(User).filter(User.email == user_data.email).first()
-    
-    if not user or not verify_password(user_data.password, user.password_hash):
+    service = UserService(db)
+    try:
+        return service.authenticate(user_data.email, user_data.password)
+    except InvalidCredentialsError as e:
+        # Check if it's an inactive account (different HTTP status)
+        if "inactive" in str(e).lower():
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="User account is inactive",
+            )
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password",
         )
-    
-    if not user.is_active:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="User account is inactive",
-        )
-    
-    access_token = create_access_token(str(user.id))
-    return {"access_token": access_token, "token_type": "bearer"}
