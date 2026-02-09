@@ -35,7 +35,7 @@ def get_current_user(token: str = None, db: Session = Depends(get_db)) -> User:
     return user
 
 
-@router.post("/", response_model=SeashellResponse)
+@router.post("/create", response_model=SeashellResponse)
 def create_seashell(
     seashell_data: SeashellCreate,
     authorization: Optional[str] = Header(None),
@@ -70,3 +70,29 @@ def create_seashell(
     db.refresh(new_seashell)
     
     return new_seashell
+
+
+@router.get("/", response_model=List[SeashellResponse])
+def list_seashells(
+    db: Session = Depends(get_db),
+    skip: int = 0,
+    limit: int = 100,
+):
+    """List all seashells with pagination."""
+    seashells = db.query(Seashell).offset(skip).limit(limit).all()
+    return seashells
+
+
+@router.get("/{seashell_id}", response_model=SeashellResponse)
+def get_seashell(
+    seashell_id: UUID,
+    db: Session = Depends(get_db),
+):
+    """Get a seashell by ID."""
+    seashell = db.query(Seashell).filter(Seashell.id == seashell_id).first()
+    if not seashell:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Seashell not found",
+        )
+    return seashell
