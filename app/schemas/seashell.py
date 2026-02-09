@@ -36,3 +36,17 @@ class SeashellResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class SeashellUpdate(BaseModel):
+    name: Optional[str] = None
+    species: Optional[str] = None
+    description: Optional[str] = None
+    color: Optional[str] = None
+    size_mm: Optional[int] = None
+    found_on: Optional[date] = None
+    found_at: Optional[str] = None
+    storage_location: Optional[str] = None
+    condition: Optional[str] = None
+    notes: Optional[str] = None
+    image_url: Optional[str] = None

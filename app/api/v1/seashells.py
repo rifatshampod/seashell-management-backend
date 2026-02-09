@@ -4,7 +4,7 @@ from typing import Optional, List
 from uuid import UUID
 from app.db import get_db
 from app.db.models import Seashell, User
-from app.schemas.seashell import SeashellCreate, SeashellResponse
+from app.schemas.seashell import SeashellCreate, SeashellResponse, SeashellUpdate
 from app.core.security import verify_token
 
 router = APIRouter(prefix="/api/v1/seashells", tags=["seashells"])
@@ -95,4 +95,39 @@ def get_seashell(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Seashell not found",
         )
+    return seashell
+
+
+@router.patch("/{seashell_id}", response_model=SeashellResponse)
+def update_seashell(
+    seashell_id: UUID,
+    seashell_data: SeashellUpdate,
+    authorization: Optional[str] = Header(None),
+    db: Session = Depends(get_db),
+):
+    """Update a seashell (requires authentication)."""
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Not authenticated",
+        )
+    
+    token = authorization.replace("Bearer ", "")
+    current_user = get_current_user(token=token, db=db)
+    
+    seashell = db.query(Seashell).filter(Seashell.id == seashell_id).first()
+    if not seashell:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Seashell not found",
+        )
+    
+    # Update only provided fields
+    update_data = seashell_data.model_dump(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(seashell, field, value)
+    
+    db.commit()
+    db.refresh(seashell)
+    
     return seashell
