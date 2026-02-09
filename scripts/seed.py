@@ -36,7 +36,7 @@ def seed_initial_user():
     db.commit()
     db.refresh(test_user)
     
-    print(f"✓ Test user created successfully!")
+    print(f"  Test user created successfully!")
     print(f"  Email: test@seashell.com")
     print(f"  Password: password123")
     print(f"  User ID: {test_user.id}")
