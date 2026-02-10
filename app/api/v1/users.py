@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, HTTPException, status, Header, Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from uuid import UUID
@@ -9,6 +10,9 @@ from app.core.security import verify_token
 from app.services import UserService, UserNotFoundError, UserAlreadyExistsError
 
 router = APIRouter(prefix="/api/v1/users", tags=["users"])
+
+# Security scheme for Swagger UI
+security = HTTPBearer()
 
 
 def get_current_user(token: str = None, db: Session = Depends(get_db)) -> User:
@@ -48,11 +52,11 @@ def extract_token(authorization: Optional[str]) -> str:
 
 @router.get("/profile", response_model=UserResponse)
 def get_current_user_info(
-    authorization: Optional[str] = Header(None),
+    credentials: HTTPAuthorizationCredentials = Security(security),
     db: Session = Depends(get_db),
 ):
     """Get current logged-in user info."""
-    token = extract_token(authorization)
+    token = credentials.credentials
     return get_current_user(token=token, db=db)
 
 
@@ -66,11 +70,11 @@ def list_users(db: Session = Depends(get_db)):
 @router.post("/create-user", response_model=UserResponse)
 def create_user(
     user_data: UserCreate,
-    authorization: Optional[str] = Header(None),
+    credentials: HTTPAuthorizationCredentials = Security(security),
     db: Session = Depends(get_db),
 ):
     """Create a new user (requires authentication)."""
-    token = extract_token(authorization)
+    token = credentials.credentials
     get_current_user(token=token, db=db)
     
     service = UserService(db)
