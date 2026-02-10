@@ -23,6 +23,10 @@ scripts/          # Seed helper scripts
 
 [![Seashell ER Diagram](documentation/seashell-erd.drawio.png)](documentation/seashell-erd.drawio.png)
 
+## Backend Architecture:
+
+[![Backend Architecture](documentation/seashell-erd-backend-architecture.drawio.png)](documentation/seashell-erd-backend-architecture.drawio.png)
+
 
 ## Important Functionalities
 
