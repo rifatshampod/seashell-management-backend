@@ -50,7 +50,7 @@ The project is a backend application for managing seashells and is intended to b
 
 
 ## Project Structure
-Directory Structure:
+**Directory Structure:**
 ```bash
 app/
   api/            # Versioned API endpoints
@@ -64,7 +64,7 @@ documentation/    # Documentation resources with front end instructions
 uploads/          # Uploaded seashell images
 ```
 
-Backend Architecture:
+**Backend Architecture:**
 
 [![Backend Architecture](documentation/seashell-erd-backend-architecture.drawio.png)](documentation/seashell-erd-backend-architecture.drawio.png)
 
@@ -171,7 +171,8 @@ Detailed instructions on how to use the API documentation can be found in the **
 ## Frontend Integration
 As this is only the backend functions without any frontend UI, the APIs need to be integrated with a frontend application. Detailed instructions on how to integrate the APIs and about the data fields can be found in the **[Frontend Integration Guide](documentation/Frontend_integration.md)**.
 
-## Design Note:
+## Design Notes:
+
 - **Register:** user registration is disabled as the system is for internal use only by James and Anna. In case new users are needed in future, either James or Anna can add new users after logging in to the system. For starter, a default user is created with email `test@seashell.com` and password `password123`. 
 - **Search:** search functionality is not implemented, rather it is left to the frontend to implement. The whole seashell list is fetched from the backend and the frontend can implement the search functionality as per their requirement.
 - **Bearer Token:** Bearer token is used for authentication and for the simplicity of the assessment, it is not implemented as a middleware and it is **not a refresh token**. For future production, it should be implemented as a middleware and it should be a refresh token.
