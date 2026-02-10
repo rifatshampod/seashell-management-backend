@@ -30,11 +30,11 @@ The following image shows the API endpoint for logging in with default user cred
 
 ![API Documentation](screenshot-api-doc-2.png) 
 
-After clicking the "Try it out" button, the following fields will appear:
+After clicking the "Try it out" button and then "Execute" button with the default user credentials in API body, the following response will appear:
 
 ![API Documentation](screenshot-api-doc-3.png) 
 
-After successfully logging in, a JWT token (`access token`) will be received in the response body, which can be used to authenticate with the backend. This token can be used to access all the protected endpoints. To access the protected endpoints, the token should be included in the Authorization header in the format: `Authorization: Bearer <token>`.
+Here after successfully logging in, a JWT token (`access token`) will be received in the response body, which can be used to authenticate with the backend. This token can be used to access all the protected endpoints. To access the protected endpoints, the token should be included in the Authorization header in the format: `Authorization: Bearer <token>`.
 > To test the protected endpoints in the Swagger UI, the token should be added in the "**Authorize 🔓**" button in the top right corner of the page.
 
 ### Step 5: Store JWT Token (Front end example)
@@ -285,7 +285,7 @@ The `image_url` field in the seashell response contains the full path:
 
 
 
---------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------
 
 End of Frontend Integration Guide
 
