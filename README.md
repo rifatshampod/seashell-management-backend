@@ -2,7 +2,8 @@
 
 > Repository of technical assessment project for KONE summer trainee (Cloud Developer) position. Please refrain from using this for personal or professional use. This repository will be archived after the recruitment process is completed. 
 
-Overview
+## Overview
+The project is a backend application for managing seashells and is intended to be used internally by James and Anna. It provides APIs for managing users and seashells. It also provides APIs for authentication and authorization. 
 
 ## Tech Stack
 
