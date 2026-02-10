@@ -9,6 +9,8 @@ from app.db.models import User
 from app.schemas.seashell import SeashellCreate, SeashellResponse, SeashellUpdate, DeleteResponse
 from app.core.security import verify_token
 from app.services import SeashellService, SeashellNotFoundError
+from app.core.file_upload import save_upload_file, InvalidFileTypeError, FileTooLargeError
+    
 
 router = APIRouter(prefix="/api/v1/seashells", tags=["seashells"])
 
@@ -68,8 +70,6 @@ async def create_seashell(
     db: Session = Depends(get_db),
 ):
     """Create a new seashell with optional image in a single request (requires authentication)."""
-    from app.core.file_upload import InvalidFileTypeError, FileTooLargeError
-    
     # Authenticate user using the Bearer token from Security
     token = credentials.credentials
     current_user = get_current_user(token=token, db=db)
@@ -205,8 +205,6 @@ async def update_seashell(
     db: Session = Depends(get_db),
 ):
     """Update a seashell with optional image in a single request (requires authentication)."""
-    from app.core.file_upload import InvalidFileTypeError, FileTooLargeError
-    
     # Authenticate user using the Bearer token from Security
     token = credentials.credentials
     get_current_user(token=token, db=db)
@@ -282,8 +280,6 @@ async def upload_image(
     db: Session = Depends(get_db),
 ):
     """Upload an image for a seashell (requires authentication)."""
-    from app.core.file_upload import save_upload_file, InvalidFileTypeError, FileTooLargeError
-    
     token = credentials.credentials
     get_current_user(token=token, db=db)
     
