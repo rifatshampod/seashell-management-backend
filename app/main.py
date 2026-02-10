@@ -10,6 +10,9 @@ app = FastAPI(
     title=settings.APP_NAME,
     version="1.0.0",
     description="Seashell Management Backend API",
+    swagger_ui_parameters={
+        "persistAuthorization": True  # Remember auth between page refreshes
+    }
 )
 
 # Create uploads directory if it doesn't exist

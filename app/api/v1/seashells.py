@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header, UploadFile, Form
+from fastapi import APIRouter, Depends, HTTPException, status, Header, UploadFile, Form, Security
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from uuid import UUID
@@ -10,6 +11,9 @@ from app.core.security import verify_token
 from app.services import SeashellService, SeashellNotFoundError
 
 router = APIRouter(prefix="/api/v1/seashells", tags=["seashells"])
+
+# Security scheme for Swagger UI
+security = HTTPBearer()
 
 
 def get_current_user(token: str = None, db: Session = Depends(get_db)) -> User:
@@ -60,14 +64,14 @@ async def create_seashell(
     condition: Optional[str] = Form(None),
     notes: Optional[str] = Form(None),
     file: Optional[UploadFile] = None,
-    authorization: Optional[str] = Header(None),
+    credentials: HTTPAuthorizationCredentials = Security(security),
     db: Session = Depends(get_db),
 ):
     """Create a new seashell with optional image in a single request (requires authentication)."""
     from app.core.file_upload import save_upload_file, InvalidFileTypeError, FileTooLargeError
     
-    # Authenticate user
-    token = extract_token(authorization)
+    # Authenticate user using the Bearer token from Security
+    token = credentials.credentials
     current_user = get_current_user(token=token, db=db)
     
     # Create seashell data object
@@ -198,11 +202,11 @@ def get_seashell(
 def update_seashell(
     seashell_id: UUID,
     seashell_data: SeashellUpdate,
-    authorization: Optional[str] = Header(None),
+    credentials: HTTPAuthorizationCredentials = Security(security),
     db: Session = Depends(get_db),
 ):
     """Update a seashell (requires authentication)."""
-    token = extract_token(authorization)
+    token = credentials.credentials
     get_current_user(token=token, db=db)
     
     service = SeashellService(db)
@@ -218,11 +222,11 @@ def update_seashell(
 @router.delete("/{seashell_id}", response_model=DeleteResponse)
 def delete_seashell(
     seashell_id: UUID,
-    authorization: Optional[str] = Header(None),
+    credentials: HTTPAuthorizationCredentials = Security(security),
     db: Session = Depends(get_db),
 ):
     """Delete a seashell (requires authentication)."""
-    token = extract_token(authorization)
+    token = credentials.credentials
     get_current_user(token=token, db=db)
     
     service = SeashellService(db)
@@ -240,13 +244,13 @@ def delete_seashell(
 async def upload_image(
     seashell_id: UUID,
     file: UploadFile,
-    authorization: Optional[str] = Header(None),
+    credentials: HTTPAuthorizationCredentials = Security(security),
     db: Session = Depends(get_db),
 ):
     """Upload an image for a seashell (requires authentication)."""
     from app.core.file_upload import save_upload_file, InvalidFileTypeError, FileTooLargeError
     
-    token = extract_token(authorization)
+    token = credentials.credentials
     get_current_user(token=token, db=db)
     
     service = SeashellService(db)
@@ -281,11 +285,11 @@ async def upload_image(
 @router.delete("/{seashell_id}/image", response_model=SeashellResponse)
 def delete_image(
     seashell_id: UUID,
-    authorization: Optional[str] = Header(None),
+    credentials: HTTPAuthorizationCredentials = Security(security),
     db: Session = Depends(get_db),
 ):
     """Delete the image for a seashell (requires authentication)."""
-    token = extract_token(authorization)
+    token = credentials.credentials
     get_current_user(token=token, db=db)
     
     service = SeashellService(db)
