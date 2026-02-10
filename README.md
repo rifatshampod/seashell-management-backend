@@ -13,7 +13,30 @@ Overview
 - **Authentication**: JWT (Bearer Token)
 - **Deployment**: Docker Compose
 
-Features
+## Important Functionalities
+
+**Authentication:**
+- Login (email + password)
+- Logout
+- Current user info (to show the user name/email in the UI and confirm session)
+
+**User Management:**
+- Seed initial users (one-time: create first user(s) by migration/CLI)
+- Create new user
+- List users
+- Activate/Deactivate user (instead of deleting users)
+- Reset user password
+
+**Seashell Management:**
+- Add seashell
+- Edit seashell
+- Delete seashell
+- View seashell list
+- View seashell details
+
+**Interactions:**
+- Filter by species (dropdown)
+
 
 ## Project Structure
 Directory Structure:
@@ -34,6 +57,13 @@ Backend Architecture:
 
 [![Backend Architecture](documentation/seashell-erd-backend-architecture.drawio.png)](documentation/seashell-erd-backend-architecture.drawio.png)
 
+## Database Structure
+
+1. `users` table
+2. `seashells` table
+
+[![Seashell ER Diagram](documentation/seashell-erd.drawio.png)](documentation/seashell-erd.drawio.png)
+
 ## Quick Start (Setup Instructions)
 
 ### 0. Prerequisites
@@ -46,12 +76,6 @@ Install the following before proceeding:
 | Docker Desktop | Latest | [docker.com](https://www.docker.com/products/docker-desktop/) |
 | Git | Latest | [git-scm.com](https://git-scm.com/) |
 
-## Database Structure
-
-1. `users` table
-2. `seashells` table
-
-[![Seashell ER Diagram](documentation/seashell-erd.drawio.png)](documentation/seashell-erd.drawio.png)
 
 ### 1. Clone Repository
 
@@ -127,36 +151,19 @@ Server runs at: **http://localhost:8000**
 
 
 ## API Documentation
+Upon successfully deploying the application in local server, the interactive API documentation in Swagger UI will be available at: **http://localhost:8000/docs#/**
+
+Detailed instructions on how to use the API documentation can be found in the **[Frontend Integration Guide](documentation/Frontend_integration.md)**.
+
+
 
 ## Frontend Integration
-<!-- 
-## Design Notes -->
+As this is only the backend functions without any frontend UI, the APIs need to be integrated with a frontend application. Detailed instructions on how to integrate the APIs and about the data fields can be found in the **[Frontend Integration Guide](documentation/Frontend_integration.md)**.
+
+## Design Note:
+- **Register:** user registration is disabled as the system is for internal use only by James and Anna. In case new users are needed in future, either James or Anna can add new users after logging in to the system. For starter, a default user is created with email `test@seashell.com` and password `password123`. 
+- **Search:** search functionality is not implemented, rather it is left to the frontend to implement. The whole seashell list is fetched from the backend and the frontend can implement the search functionality as per their requirement.
+- **Bearer Token:** Bearer token is used for authentication and for the simplicity of the assessment, it is not implemented as a middleware and it is **not a refresh token**. For future production, it should be implemented as a middleware and it should be a refresh token.
 
 
-## Important Functionalities
-
-**Authentication:**
-- Login (email + password)
-- Logout
-- Current user info (to show the user name/email in the UI and confirm session)
-
-**User Management:**
-- Seed initial users (one-time: create first user(s) by migration/CLI/admin page)
-- Create new user
-- List users
-- Activate/Deactivate user (instead of deleting users)
-- Reset user password
-
-**Seashell Management:**
-- Add seashell
-- Edit seashell
-- Delete seashell
-- View seashell list
-- View seashell details
-
-**Interactions:**
-- Search (by name/species/description—one search box)
-- Filter by species (dropdown)
-- Sort (newest/oldest, name A–Z) (lets see if needed)
-- Pagination (simple next/prev) (lets see if needed)
 
