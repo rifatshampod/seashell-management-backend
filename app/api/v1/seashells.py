@@ -68,13 +68,13 @@ async def create_seashell(
     db: Session = Depends(get_db),
 ):
     """Create a new seashell with optional image in a single request (requires authentication)."""
-    from app.core.file_upload import save_upload_file, InvalidFileTypeError, FileTooLargeError
+    from app.core.file_upload import InvalidFileTypeError, FileTooLargeError
     
     # Authenticate user using the Bearer token from Security
     token = credentials.credentials
     current_user = get_current_user(token=token, db=db)
     
-    # Create seashell data object
+    # Create seashell data object from form fields
     seashell_data = SeashellCreate(
         name=name,
         species=species,
@@ -88,38 +88,27 @@ async def create_seashell(
         notes=notes,
     )
     
-    # Create seashell in database
+    # Delegate to service layer
     service = SeashellService(db)
-    seashell = service.create_seashell(seashell_data, added_by_id=current_user.id)
-    
-    # Upload image if provided
-    if file:
-        try:
-            image_url = await save_upload_file(file, str(seashell.id))
-            seashell = service.update_image_url(seashell.id, image_url)
-        except InvalidFileTypeError as e:
-            # Delete the seashell if image upload fails
-            service.delete_seashell(seashell.id)
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=str(e),
-            )
-        except FileTooLargeError as e:
-            # Delete the seashell if image upload fails
-            service.delete_seashell(seashell.id)
-            raise HTTPException(
-                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
-                detail=str(e),
-            )
-        except Exception as e:
-            # Delete the seashell if image upload fails
-            service.delete_seashell(seashell.id)
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Image upload failed: {str(e)}",
-            )
-    
-    return seashell
+    try:
+        return await service.create_seashell_with_image(
+            seashell_data, added_by_id=current_user.id, file=file
+        )
+    except InvalidFileTypeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except FileTooLargeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Image upload failed: {str(e)}",
+        )
 
 
 @router.get("/", response_model=List[SeashellResponse])

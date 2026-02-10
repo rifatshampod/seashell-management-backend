@@ -62,6 +62,49 @@ class SeashellService:
         self.db.refresh(seashell)
         return seashell
 
+    async def create_seashell_with_image(
+        self,
+        seashell_data: SeashellCreate,
+        added_by_id: Optional[UUID] = None,
+        file: Optional["UploadFile"] = None,
+    ) -> Seashell:
+        """
+        Create a new seashell entry with optional image upload.
+        
+        Handles the full workflow: creates the seashell record, uploads the image
+        if provided, and updates the image URL in the database. If image upload
+        fails, the seashell record is rolled back (deleted).
+        
+        Args:
+            seashell_data: Seashell data containing name, species, and optional fields.
+            added_by_id: UUID of the user who is adding this seashell.
+            file: Optional uploaded image file.
+            
+        Returns:
+            The created Seashell object with image_url populated if image was uploaded.
+            
+        Raises:
+            InvalidFileTypeError: If file type is not allowed.
+            FileTooLargeError: If file exceeds size limit.
+            Exception: If image upload fails for any other reason.
+        """
+        from app.core.file_upload import save_upload_file
+        
+        # Step 1: Create the seashell record
+        seashell = self.create_seashell(seashell_data, added_by_id=added_by_id)
+        
+        # Step 2: Upload image if provided
+        if file:
+            try:
+                image_url = await save_upload_file(file, str(seashell.id))
+                seashell = self.update_image_url(seashell.id, image_url)
+            except Exception:
+                # Rollback: delete the seashell if image upload fails
+                self.delete_seashell(seashell.id)
+                raise
+        
+        return seashell
+
     def get_seashell_by_id(self, seashell_id: UUID) -> Seashell:
         """
         Get a seashell by its ID.
