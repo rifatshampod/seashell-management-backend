@@ -6,6 +6,14 @@ from typing import Optional
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "email": "test@seashell.com",
+                "password": "password123"
+            }
+        }
 
 
 class UserCreate(BaseModel):
