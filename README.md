@@ -5,6 +5,16 @@
 ## Overview
 The project is a backend application for managing seashells and is intended to be used internally by James and Anna. It provides APIs for managing users and seashells. It also provides APIs for authentication and authorization. 
 
+## Table of Contents
+- [Tech Stack](#tech-stack)
+- [Important Functionalities](#important-functionalities)
+- [Project Structure](#project-structure)
+- [Database Structure](#database-structure)
+- [Quick Start (Setup Instructions)](#quick-start-setup-instructions)
+- [API Documentation](#api-documentation)
+- [Frontend Integration](#frontend-integration)
+- [Design Note](#design-note)
+
 ## Tech Stack
 
 - **Backend**: FastAPI (Python 3.11+)

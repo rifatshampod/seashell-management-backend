@@ -2,6 +2,22 @@
 
 This guide provides all necessary information for integrating a frontend application with the Seashell Management Backend API. The API follows RESTful principles and uses JWT-based authentication for secure access to protected resources.
 
+## Table of Contents
+- [Core Workflow](#core-workflow)
+  - [Step 1: Deploy the Backend and Database](#step-1-deploy-the-backend-and-database)
+  - [Step 2: Base URL](#step-2-base-url)
+  - [Step 3: Access API Documentation](#step-3-access-api-documentation)
+  - [Step 4: Login](#step-4-login)
+  - [Step 5: Store JWT Token (Front end example)](#step-5-store-jwt-token-front-end-example)
+  - [Step 6: Understanding API calls](#step-6-understanding-api-calls)
+  - [Step 7: Form Validation (Data Types and Restrictions)](#step-7-form-validation-data-types-and-restrictions)
+- [Additional Instructions](#additional-instructions)
+- [Error Handling](#error-handling)
+- [Image Upload](#image-upload)
+  - [Method 1: Upload During Create/Update (Recommended)](#method-1-upload-during-createupdate-recommended)
+  - [Method 2: Separate Upload Endpoint](#method-2-separate-upload-endpoint)
+  - [Accessing Uploaded Images](#accessing-uploaded-images)
+
 ## Core Workflow
 [![Front End Workflow](seashell-front-end.png)](seashell-front-end.png)
 
