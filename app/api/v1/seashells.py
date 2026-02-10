@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header, UploadFile
+from fastapi import APIRouter, Depends, HTTPException, status, Header, UploadFile, Form
 from sqlalchemy.orm import Session
 from typing import Optional, List
 from uuid import UUID
@@ -48,17 +48,74 @@ def extract_token(authorization: Optional[str]) -> str:
 
 
 @router.post("/create", response_model=SeashellResponse)
-def create_seashell(
-    seashell_data: SeashellCreate,
+async def create_seashell(
+    name: str = Form(...),
+    species: str = Form(...),
+    description: Optional[str] = Form(None),
+    color: Optional[str] = Form(None),
+    size_mm: Optional[int] = Form(None),
+    found_on: Optional[date] = Form(None),
+    found_at: Optional[str] = Form(None),
+    storage_location: Optional[str] = Form(None),
+    condition: Optional[str] = Form(None),
+    notes: Optional[str] = Form(None),
+    file: Optional[UploadFile] = None,
     authorization: Optional[str] = Header(None),
     db: Session = Depends(get_db),
 ):
-    """Create a new seashell (requires authentication)."""
+    """Create a new seashell with optional image in a single request (requires authentication)."""
+    from app.core.file_upload import save_upload_file, InvalidFileTypeError, FileTooLargeError
+    
+    # Authenticate user
     token = extract_token(authorization)
     current_user = get_current_user(token=token, db=db)
     
+    # Create seashell data object
+    seashell_data = SeashellCreate(
+        name=name,
+        species=species,
+        description=description,
+        color=color,
+        size_mm=size_mm,
+        found_on=found_on,
+        found_at=found_at,
+        storage_location=storage_location,
+        condition=condition,
+        notes=notes,
+    )
+    
+    # Create seashell in database
     service = SeashellService(db)
-    return service.create_seashell(seashell_data, added_by_id=current_user.id)
+    seashell = service.create_seashell(seashell_data, added_by_id=current_user.id)
+    
+    # Upload image if provided
+    if file:
+        try:
+            image_url = await save_upload_file(file, str(seashell.id))
+            seashell = service.update_image_url(seashell.id, image_url)
+        except InvalidFileTypeError as e:
+            # Delete the seashell if image upload fails
+            service.delete_seashell(seashell.id)
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=str(e),
+            )
+        except FileTooLargeError as e:
+            # Delete the seashell if image upload fails
+            service.delete_seashell(seashell.id)
+            raise HTTPException(
+                status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                detail=str(e),
+            )
+        except Exception as e:
+            # Delete the seashell if image upload fails
+            service.delete_seashell(seashell.id)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Image upload failed: {str(e)}",
+            )
+    
+    return seashell
 
 
 @router.get("/", response_model=List[SeashellResponse])
