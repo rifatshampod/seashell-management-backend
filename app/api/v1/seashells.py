@@ -188,23 +188,68 @@ def get_seashell(
 
 
 @router.patch("/{seashell_id}", response_model=SeashellResponse)
-def update_seashell(
+async def update_seashell(
     seashell_id: UUID,
-    seashell_data: SeashellUpdate,
+    name: Optional[str] = Form(None),
+    species: Optional[str] = Form(None),
+    description: Optional[str] = Form(None),
+    color: Optional[str] = Form(None),
+    size_mm: Optional[int] = Form(None),
+    found_on: Optional[date] = Form(None),
+    found_at: Optional[str] = Form(None),
+    storage_location: Optional[str] = Form(None),
+    condition: Optional[str] = Form(None),
+    notes: Optional[str] = Form(None),
+    file: Optional[UploadFile] = None,
     credentials: HTTPAuthorizationCredentials = Security(security),
     db: Session = Depends(get_db),
 ):
-    """Update a seashell (requires authentication)."""
+    """Update a seashell with optional image in a single request (requires authentication)."""
+    from app.core.file_upload import InvalidFileTypeError, FileTooLargeError
+    
+    # Authenticate user using the Bearer token from Security
     token = credentials.credentials
     get_current_user(token=token, db=db)
     
+    # Create update data object from form fields
+    seashell_data = SeashellUpdate(
+        name=name,
+        species=species,
+        description=description,
+        color=color,
+        size_mm=size_mm,
+        found_on=found_on,
+        found_at=found_at,
+        storage_location=storage_location,
+        condition=condition,
+        notes=notes,
+    )
+    
+    # Delegate to service layer
     service = SeashellService(db)
     try:
-        return service.update_seashell(seashell_id, seashell_data)
+        return await service.update_seashell_with_image(
+            seashell_id, seashell_data, file=file
+        )
     except SeashellNotFoundError:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Seashell not found",
+        )
+    except InvalidFileTypeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+    except FileTooLargeError as e:
+        raise HTTPException(
+            status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+            detail=str(e),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Update failed: {str(e)}",
         )
 
 

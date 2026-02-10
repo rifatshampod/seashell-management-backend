@@ -256,6 +256,49 @@ class SeashellService:
         self.db.refresh(seashell)
         return seashell
 
+    async def update_seashell_with_image(
+        self,
+        seashell_id: UUID,
+        update_data: SeashellUpdate,
+        file: Optional["UploadFile"] = None,
+    ) -> Seashell:
+        """
+        Update a seashell's information with optional image upload.
+        
+        Handles the full workflow: updates the seashell record, uploads the image
+        if provided, and updates the image URL in the database.
+        
+        Args:
+            seashell_id: The UUID of the seashell to update.
+            update_data: The fields to update.
+            file: Optional uploaded image file.
+            
+        Returns:
+            The updated Seashell object with image_url populated if image was uploaded.
+            
+        Raises:
+            SeashellNotFoundError: If the seashell is not found.
+            InvalidFileTypeError: If file type is not allowed.
+            FileTooLargeError: If file exceeds size limit.
+            Exception: If image upload fails for any other reason.
+        """
+        from app.core.file_upload import save_upload_file, delete_image_file
+        
+        # Step 1: Update the seashell record
+        seashell = self.update_seashell(seashell_id, update_data)
+        
+        # Step 2: Upload new image if provided
+        if file:
+            # Delete old image if exists
+            if seashell.image_url:
+                delete_image_file(seashell.image_url)
+            
+            # Upload new image
+            image_url = await save_upload_file(file, str(seashell_id))
+            seashell = self.update_image_url(seashell_id, image_url)
+        
+        return seashell
+
     def delete_seashell(self, seashell_id: UUID) -> None:
         """
         Delete a seashell from the collection.
